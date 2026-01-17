@@ -58,6 +58,7 @@ async def voice(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
+            print("receive text in tts server: ", data)
             audio_outputs = websocket.app.state.tts.infer(data)
             await websocket.send_bytes(float32_to_pcm16(audio_outputs))
 

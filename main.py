@@ -4,8 +4,10 @@ from google.genai import types
 from dotenv import load_dotenv
 import os
 import pyaudio
-
+import websockets
 load_dotenv()
+
+TTS_URL = os.environ['DEPLOY_DOMAIN']
 
 client = genai.Client(api_key=os.environ['API'], http_options={"api_version": "v1alpha"})
 MODEL = "gemini-2.5-flash-native-audio-preview-12-2025"
@@ -47,25 +49,27 @@ async def listen_audio():
         data = await asyncio.to_thread(audio_stream.read, CHUNK_SIZE, **kwargs)
         await audio_queue_mic.put({"data": data, "mime_type": "audio/pcm"})
 
-async def send_realtime(session):
+async def send_realtime(live_session):
     """Sends audio from the mic audio queue to the GenAI session."""
     while True:
         msg = await audio_queue_mic.get()
-        await session.send_realtime_input(audio=msg)
+        await live_session.send_realtime_input(audio=msg)
 
 
-async def receive_audio(session):
+async def receive_live_response(live_session, tts_ws):
     """Receives responses from GenAI and puts audio data into the speaker audio queue."""
     while True:
-        turn = session.receive()
+        turn = live_session.receive()
         async for response in turn:
-            if (response.server_content and response.server_content.model_turn):
-                for part in response.server_content.model_turn.parts:
-                    if part.inline_data and isinstance(part.inline_data.data, bytes):
-                        audio_queue_output.put_nowait(part.inline_data.data)
-
             if response.server_content.output_transcription:
-                print("Transcript:", response.server_content.output_transcription.text)
+                response_segment_text = response.server_content.output_transcription.text
+                tts_ws.send(response_segment_text)
+
+async def receive_audio_response(tts_ws):
+    """Receives responses from TTS service"""
+    while True:
+        audio_response = await tts_ws.recv()
+        audio_queue_output.put_nowait(audio_response)
 
         # Empty the queue on interruption to stop playback
         while not audio_queue_output.empty():
@@ -92,11 +96,12 @@ async def run():
     try:
         async with client.aio.live.connect(
             model=MODEL, config=CONFIG
-        ) as live_session:
+        ) as live_session, websockets.connect(f"wss://{TTS_URL}/voice", max_size=None) as tts_ws:
+            
             await asyncio.gather(
                 listen_audio(),
                 send_realtime(live_session),
-                receive_audio(live_session),
+                receive_live_response(live_session, tts_ws),
                 play_audio()
             )
             
