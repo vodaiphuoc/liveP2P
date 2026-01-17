@@ -1,0 +1,7 @@
+vieneu
+PyAudio
+fastapi
+uvicorn
+loguru
+python-dotenv
+ngrok

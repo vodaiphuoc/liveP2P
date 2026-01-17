@@ -1,0 +1,7 @@
+google-genai
+PyAudio
+fastapi
+uvicorn
+loguru
+python-dotenv
+ngrok
