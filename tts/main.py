@@ -21,13 +21,14 @@ DEPLOY_DOMAIN = os.environ['DEPLOY_DOMAIN']
 async def lifespan(app: FastAPI):
     logger.info("Setting up Ngrok Tunnel")
 
-    app.state.tts = Vieneu(
-        mode='standard', 
-        backbone_repo="pnnbao-ump/VieNeu-TTS-0.3B-ngoc-huyen-gguf-Q4_0",
-        backbone_device="cpu", 
-        codec_repo="neuphonic/neucodec-onnx-decoder-int8", 
-        codec_device="cpu"
-    )
+    app.state.tts = Vieneu()
+    # app.state.tts = Vieneu(
+    #     mode='standard', 
+    #     backbone_repo="pnnbao-ump/VieNeu-TTS-0.3B-ngoc-huyen-gguf-Q4_0",
+    #     backbone_device="cpu", 
+    #     codec_repo="neuphonic/neucodec-onnx-decoder-int8", 
+    #     codec_device="cpu"
+    # )
 
     app.state.voice_data = app.state.tts.get_preset_voice('Ngoc')
 

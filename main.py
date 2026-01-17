@@ -72,7 +72,6 @@ async def receive_live_response(live_session, tts_ws):
         turn = live_session.receive()
 
         response_text = ""
-        
         async for response in turn:
             if response.server_content.output_transcription:
                 response_text += response.server_content.output_transcription.text
