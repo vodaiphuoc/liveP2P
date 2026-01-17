@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
         backbone_repo="pnnbao-ump/VieNeu-TTS-0.3B-ngoc-huyen-gguf-Q4_0",
         backbone_device="cpu", 
         codec_repo="neuphonic/neucodec-onnx-decoder-int8", 
-        codec_device="cpu"
+        codec_device="cpu" 
     )
 
     ngrok.set_auth_token(NGROK_AUTH_TOKEN)
@@ -58,7 +58,6 @@ async def voice(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
-            print("receive text in tts server: ", data)
             audio_outputs = websocket.app.state.tts.infer(data)
             await websocket.send_bytes(float32_to_pcm16(audio_outputs))
 
@@ -68,7 +67,7 @@ async def voice(websocket: WebSocket):
 
 async def main_run():
     config = uvicorn.Config(
-        "main:app", 
+        "server:app", 
     	host=HTTPS_SERVER,
         port=int(APPLICATION_PORT),
     	reload=True,
