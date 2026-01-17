@@ -21,6 +21,7 @@ DEPLOY_DOMAIN = os.environ['DEPLOY_DOMAIN']
 async def lifespan(app: FastAPI):
     logger.info("Setting up Ngrok Tunnel")
 
+    # take default params
     app.state.tts = Vieneu()
     # app.state.tts = Vieneu(
     #     mode='standard', 
