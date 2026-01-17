@@ -67,7 +67,7 @@ async def voice(websocket: WebSocket):
 
 async def main_run():
     config = uvicorn.Config(
-        "server:app", 
+        "main:app", 
     	host=HTTPS_SERVER,
         port=int(APPLICATION_PORT),
     	reload=True,
