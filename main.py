@@ -6,6 +6,7 @@ import os
 import pyaudio
 import websockets
 load_dotenv()
+import re
 
 TTS_URL = os.environ['DEPLOY_DOMAIN']
 
@@ -15,7 +16,8 @@ MODEL = "gemini-2.5-flash-native-audio-preview-12-2025"
 
 SYSTEM_INST = """
 Bạn là một voicebot thân thiện với con người, hãy luôn trả lời câu hỏi một
-cách vui vẻ, và bằng tiếng Việt (Vietnamese)
+cách vui vẻ, và bằng tiếng Việt (Vietnamese). Có thể dùng các ký tự đặc biệt 
+như . , !, ; để thể hiện ngắt quảng những ý muốn nói.
 """
 
 CONFIG = types.LiveConnectConfig(
@@ -68,11 +70,25 @@ async def receive_live_response(live_session, tts_ws):
     """Receives responses from GenAI and puts audio data into the speaker audio queue."""
     while True:
         turn = live_session.receive()
+
+        response_text = ""
+        
         async for response in turn:
             if response.server_content.output_transcription:
-                response_segment_text = response.server_content.output_transcription.text
-                print('receive response_segment_text: ',response_segment_text)
-                await tts_ws.send(response_segment_text)
+                response_text += response.server_content.output_transcription.text
+
+            span_search = re.search(r'[.!?]\s', response_text)
+
+            if span_search:
+                end_index = span_search.span()[-1]
+                to_speak_text = response_text[:end_index]
+                
+                print('receive response_segment_text: ',to_speak_text)
+                await tts_ws.send(to_speak_text)
+
+                response_text = response_text[end_index:]
+        
+        # await tts_ws.send(response_text)
 
 async def receive_audio_response(tts_ws):
     """Receives responses from TTS service"""

@@ -29,6 +29,8 @@ async def lifespan(app: FastAPI):
         codec_device="cpu"
     )
 
+    app.state.voice_data = app.state.tts.get_preset_voice('Ngoc')
+
     ngrok.set_auth_token(NGROK_AUTH_TOKEN)
     ngrok.forward(addr = HTTPS_SERVER+':'+str(APPLICATION_PORT),
                   proto = "http",
@@ -59,7 +61,7 @@ async def voice(websocket: WebSocket):
         while True:
             data = await websocket.receive_text()
             print("receive text in tts server: ", data)
-            audio_outputs = websocket.app.state.tts.infer(data)
+            audio_outputs = websocket.app.state.tts.infer(data, voice=app.state.voice_data)
             await websocket.send_bytes(float32_to_pcm16(audio_outputs))
 
     except WebSocketDisconnect as e:
