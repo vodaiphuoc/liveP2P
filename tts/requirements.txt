@@ -1,5 +1,4 @@
 vieneu
-PyAudio
 fastapi
 uvicorn
 loguru
