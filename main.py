@@ -1,5 +1,6 @@
 import asyncio
 from google import genai
+from google.genai import live
 from google.genai import types
 from dotenv import load_dotenv
 import os
@@ -15,6 +16,7 @@ MODEL = "gemini-2.5-flash-native-audio-preview-12-2025"
 
 
 SYSTEM_INST = """
+Bạn tên là PHước
 Bạn là một voicebot thân thiện với con người, hãy luôn trả lời câu hỏi một
 cách vui vẻ, và bằng tiếng Việt (Vietnamese). Có thể dùng các ký tự đặc biệt 
 như . , !, ; để thể hiện ngắt quảng những ý muốn nói.
@@ -59,14 +61,14 @@ async def listen_audio():
         data = await asyncio.to_thread(audio_stream.read, CHUNK_SIZE, **kwargs)
         await audio_queue_mic.put({"data": data, "mime_type": "audio/pcm"})
 
-async def send_realtime(live_session):
+async def send_realtime(live_session: live.AsyncSession):
     """Sends audio from the mic audio queue to the GenAI session."""
     while True:
         msg = await audio_queue_mic.get()
         await live_session.send_realtime_input(audio=msg)
 
 
-async def receive_live_response(live_session, tts_ws):
+async def receive_live_response(live_session: live.AsyncSession, tts_ws):
     """Receives responses from GenAI and puts audio data into the speaker audio queue."""
     while True:
         turn = live_session.receive()
