@@ -1,0 +1,11 @@
+google-genai
+PyAudio
+fastapi
+uvicorn
+loguru
+python-dotenv
+onnxruntime
+numpy
+aiohttp
+phonemizer==3.3.0
+huggingface_hub
