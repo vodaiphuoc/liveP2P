@@ -4,4 +4,7 @@ client.py
 ref.py
 server.py
 test.py
-third_party/
+.third_party/
+__pycache__/
+exp/
+legacy/

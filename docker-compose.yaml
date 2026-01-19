@@ -1,0 +1,37 @@
+name: voicebot
+
+services:
+  tts:
+    container_name: voicebot-tts-container
+    image: voicebot-tts
+    build:
+      context: ./services/tts
+      dockerfile: ./Dockerfile
+    env_file:
+      - ./services/tts/.env
+    environment:
+      PORT: ${TTS_PORT}
+      VOLUME: ${TTS_VOLUME}
+    ports:
+      - "${TTS_PORT}:${TTS_PORT}"  
+    volumes:
+      - tts-volume:${TTS_VOLUME}
+    networks:
+      - voicebot-network
+
+  # live:
+  #   container_name: voicebot-live-container
+  #   image: voicebot-live
+  #   build:
+  #     context: ./services/live
+  #     dockerfile: ./Dockerfile
+  #   env_file:
+  #     - .env
+
+volumes:
+  tts-volume:
+    driver: local
+
+networks:
+  voicebot-network:
+    driver: bridge
