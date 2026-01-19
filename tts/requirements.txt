@@ -1,6 +1,0 @@
-vieneu
-fastapi
-uvicorn
-loguru
-python-dotenv
-ngrok
