@@ -139,8 +139,22 @@ class VietnameseTTSNormalizer:
         
         sorted_units = sorted(self.units.items(), key=lambda x: len(x[0]), reverse=True)
         for unit, full_name in sorted_units:
-            pattern = r'(\d+(?:[.,]\d+)?)\s*' + re.escape(unit) + r'\b'
-            text = re.sub(pattern, rf'\1 {full_name}', text, flags=re.IGNORECASE)
+            if unit == 'm':
+                pattern = r'(\d+(?:[.,]\d+)?)\s*' + re.escape(unit) + r'((?:\d+)?)\b'
+                
+                def make_suffix(match):
+                    r"""If match group 2, put it in the end"""
+                    before_unit = match.group(1).lower()
+                    after_unit = match.group(2).lower()
+                
+                    suffix = f" {after_unit}" if after_unit else ""
+                    return f"{before_unit} {full_name}{suffix}"
+                
+                text = re.sub(pattern, make_suffix, text, flags=re.IGNORECASE)
+
+            else:
+                pattern = r'(\d+(?:[.,]\d+)?)\s*' + re.escape(unit) + r'\b'
+                text = re.sub(pattern, rf'\1 {full_name}', text, flags=re.IGNORECASE)
         
         for unit, full_name in sorted_units:
             if any(c in unit for c in '²³°'):
