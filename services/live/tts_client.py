@@ -2,7 +2,6 @@ from utils.phonemize_text import phonemize_with_dict
 import anyio
 from anyio.streams.memory import MemoryObjectSendStream, MemoryObjectReceiveStream
 import aiohttp
-import numpy as np
 
 from codec import NeuCodecDecoder
 

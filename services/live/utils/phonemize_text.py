@@ -5,7 +5,7 @@ import glob
 import re
 from phonemizer import phonemize
 from phonemizer.backend.espeak.espeak import EspeakWrapper
-from utils.normalize_text import VietnameseTTSNormalizer
+from .normalize_text import VietnameseTTSNormalizer
 
 # Configuration
 PHONEME_DICT_PATH = os.getenv(

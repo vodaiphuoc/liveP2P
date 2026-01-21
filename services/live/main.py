@@ -71,6 +71,7 @@ async def voice(websocket: WebSocket):
                         )
                 except WebSocketDisconnect as e:
                     await send_live_output_stream.aclose()
+                    await send_tts_stream.aclose()
                     raise e
 
             async def _receive_responses():
