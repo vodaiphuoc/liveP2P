@@ -4,8 +4,10 @@ from transformers import TrainingArguments
 import os
 import torch
 from torch.utils.data import Dataset
+import argparse
+import json
 
-
+from utils.phonemize_text import phonemize_with_dict
 
 def preprocess_sample(sample, tokenizer, max_len=2048):
     speech_gen_start = tokenizer.convert_tokens_to_ids('<|SPEECH_GENERATION_START|>')
@@ -137,7 +139,10 @@ training_config = {
     'bf16': False,
 }
 
-def main():
+def main(encoded_data_path:str):
+
+    with open(encoded_data_path,"r") as fp:
+        DATA_ENCODED = json.load(fp)
 
     # Lấy tên model từ config đã khai báo ở cell trước
     model_name = training_config['model']
@@ -198,4 +203,8 @@ def main():
     tokenizer.save_pretrained(save_path)
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--encoded_data_file', type=str)
+    args = parser.parse_args()
+
+    main(encoded_data_path = args.encoded_data_file)
