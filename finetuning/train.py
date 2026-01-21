@@ -140,7 +140,9 @@ training_config = {
 }
 
 def main(encoded_data_path:str):
-
+    DATA_ENCODED = None
+    assert os.path.isfile(encoded_data_path)
+    
     with open(encoded_data_path,"r") as fp:
         DATA_ENCODED = json.load(fp)
 
