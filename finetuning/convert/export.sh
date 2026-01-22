@@ -11,5 +11,5 @@ cd llama.cpp && pip install -r requirements.txt
 echo "Building llama.cpp"
 make -j$(nproc)
 
-python llama.cpp/convert_hf_to_gguf.py "$2" --outfile model-fp16.gguf --outtype f16 && \
-llama.cpp/quantize model-fp16.gguf model-q4.gguf Q4_K_M
+python ./llama.cpp/convert_hf_to_gguf.py "$2" --outfile model-fp16.gguf --outtype f16 && \
+./llama.cpp/quantize model-fp16.gguf model-q4.gguf Q4_K_M

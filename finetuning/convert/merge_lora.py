@@ -15,7 +15,7 @@ if __name__ == "__main__":
     # Load base
     model = AutoModelForCausalLM.from_pretrained(
         args.base_model,
-        torch_dtype=torch.float16,
+        dtype=torch.float16,
         device_map="cpu",
         trust_remote_code=True,
     )
