@@ -1,3 +1,13 @@
+#!/usr/bin/env python
+# Copyright (c) 2026 Phuoc Vo
+# This work is licensed under the Creative Commons
+# Attribution-NonCommercial 4.0 International License.
+# https://creativecommons.org/licenses/by-nc/4.0/
+#
+# dependencies:
+#   with pip: peft accelerate liger-kernel phonemizer==3.3.0
+#   with cmd: !apt install espeak-ng -y -qq
+
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -70,7 +80,7 @@ class VieNeuDataset(Dataset):
         try:
             phones = phonemize_with_dict(text)
         except Exception as e:
-            print(f"⚠️ Phonemization error: {e}")
+            print(f"Phonemization error: {e}")
             phones = text
         
         data_item = {"phones": phones, "codes": sample["codes"]}
@@ -82,7 +92,6 @@ def get_training_args(config):
         output_dir=os.path.join(config['output_dir'], config['run_name']),
         do_train=True,
         do_eval=True,
-        # max_steps=config['max_steps'],
         per_device_eval_batch_size = config['per_device_eval_batch_size'], 
         per_device_train_batch_size=config['per_device_train_batch_size'],
         gradient_accumulation_steps=config['gradient_accumulation_steps'],
@@ -91,18 +100,15 @@ def get_training_args(config):
         warmup_ratio=config['warmup_ratio'],
         bf16=config['bf16'],
         
-        # --- CẤU HÌNH QUAN TRỌNG CHO T4 ---
-        fp16=True,                           # T4 chạy fp16 rất tốt
-        gradient_checkpointing=True,         # Bắt buộc bật để tiết kiệm RAM
+        fp16=True,
+        gradient_checkpointing=True,
         gradient_checkpointing_kwargs={'use_reentrant': False},
         
         # Tối ưu bộ nhớ & Tốc độ
         length_column_name="input_ids",
-        group_by_length=True,                # CỰC KỲ QUAN TRỌNG: Gom các câu cùng độ dài train chung để đỡ tốn RAM padding
-        optim="adamw_torch",                 # Optimizer ổn định
-        ddp_find_unused_parameters=False,    # Tắt cái này để tránh lỗi khi chạy nhiều GPU
-        # ----------------------------------
-        
+        group_by_length=True,
+        optim="adamw_torch",
+        ddp_find_unused_parameters=False,
         logging_steps=config['logging_steps'],
         eval_strategy="epoch",
         save_strategy="epoch",
@@ -111,7 +117,7 @@ def get_training_args(config):
         metric_for_best_model="eval_loss",
         report_to="none",
         dataloader_num_workers=2,
-        dataloader_prefetch_factor= 1,
+        dataloader_prefetch_factor= 2,
         dataloader_pin_memory=True,
         use_liger_kernel = True
     )
@@ -135,11 +141,9 @@ training_config = {
     'run_name': "VieNeu-TTS-LoRA",
     'output_dir': "output",
     
-    # --- CẤU HÌNH CHO TUAL T4 ---
     'per_device_eval_batch_size': 1,
-    'per_device_train_batch_size': 16,   # Giữ là 1 để an toàn vì VRAM T4 (15GB) < P100 (16GB)
-    'gradient_accumulation_steps': 16,   # Tăng lên 8 (để bù lại batch size nhỏ)
-    # ----------------------------
+    'per_device_train_batch_size': 16,
+    'gradient_accumulation_steps': 16,
     
     'learning_rate': 2e-4,
     'lr_scheduler_type': "cosine",
@@ -160,7 +164,7 @@ def main(encoded_data_path:str):
         phonemize_with_dict(ele['transcript'])
 
     # for debug only
-    DATA_ENCODED = DATA_ENCODED[:900]
+    # DATA_ENCODED = DATA_ENCODED[:900]
 
     # Lấy tên model từ config đã khai báo ở cell trước
     model_name = training_config['model']
@@ -171,15 +175,15 @@ def main(encoded_data_path:str):
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    # 2. Load Model (SỬA QUAN TRỌNG CHO T4)
+    # 2. Load Model 
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         trust_remote_code=True,
         dtype=torch.float16,
-        attn_implementation="sdpa"        
+        attn_implementation="sdpa"
     )
 
-    # 3. Bật tiết kiệm VRAM (BẮT BUỘC để không bị OOM)
+    # 3. enable checkpoint
     model.gradient_checkpointing_enable()
     model.enable_input_require_grads()
     model.config.use_cache = False
@@ -187,8 +191,8 @@ def main(encoded_data_path:str):
     # 4. Load Dataset
     full_dataset = VieNeuDataset(DATA_ENCODED, tokenizer)
 
-    # 5. Train/Eval split (5%)
-    val_size = max(1, int(0.03 * len(full_dataset)))
+    # 5. Train/Eval split 
+    val_size = max(1, int(0.05 * len(full_dataset)))
     train_size = len(full_dataset) - val_size
     train_dataset, eval_dataset = torch.utils.data.random_split(full_dataset, [train_size, val_size])
 
