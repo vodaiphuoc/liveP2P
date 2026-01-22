@@ -108,7 +108,7 @@ def get_training_args(config):
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
         report_to="none",
-        dataloader_num_workers=2,
+        # dataloader_num_workers=2,
         dataloader_prefetch_factor= 2,
         use_liger_kernel = True
     )
@@ -137,7 +137,6 @@ training_config = {
     'learning_rate': 2e-4,
     'lr_scheduler_type': "cosine",
     'warmup_ratio': 0.05,
-    'max_steps': 5000,
     'logging_steps': 50,
     'bf16': False,
 }
@@ -153,6 +152,8 @@ def main(encoded_data_path:str):
     for ele in DATA_ENCODED:
         phonemize_with_dict(ele['transcript'])
 
+    # for debug only
+    DATA_ENCODED = DATA_ENCODED[:300]
 
     # Lấy tên model từ config đã khai báo ở cell trước
     model_name = training_config['model']
