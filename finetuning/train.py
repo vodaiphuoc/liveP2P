@@ -22,6 +22,7 @@ import torch
 from torch.utils.data import Dataset
 import argparse
 import json
+import random
 
 from utils.phonemize_text import phonemize_with_dict
 
@@ -57,8 +58,7 @@ def preprocess_sample(sample, tokenizer, max_len=2048):
     return {
         "input_ids": input_ids,
         "labels": labels,
-        "attention_mask": attention_mask,
-        # "speaker_id": int(sample['sex'])
+        "attention_mask": attention_mask
     }
 
 class VieNeuDataset(Dataset):
@@ -86,8 +86,7 @@ class VieNeuDataset(Dataset):
         
         data_item = {
             "phones": phones, 
-            "codes": sample["codes"], 
-            # "sex": sample['sex']
+            "codes": sample["codes"],
         }
         return preprocess_sample(data_item, self.tokenizer, self.max_len)
 
@@ -97,6 +96,7 @@ def get_training_args(config):
         output_dir=os.path.join(config['output_dir'], config['run_name']),
         do_train=True,
         do_eval=True,
+        num_train_epochs = config['num_train_epochs'],
         per_device_eval_batch_size = config['per_device_eval_batch_size'], 
         per_device_train_batch_size=config['per_device_train_batch_size'],
         gradient_accumulation_steps=config['gradient_accumulation_steps'],
@@ -134,10 +134,9 @@ lora_config = LoraConfig(
     r=16,
     lora_alpha=32,
     target_modules=[
-        "q_proj", "k_proj", "v_proj", "o_proj", 
-        "gate_proj", "up_proj", "down_proj"
+        "q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"
     ],
-    lora_dropout=0.1,
+    lora_dropout=0.05,
     bias="none",
     task_type=TaskType.CAUSAL_LM,
 )
@@ -147,15 +146,16 @@ training_config = {
     'model': "pnnbao-ump/VieNeu-TTS-0.3B",
     'run_name': "VieNeu-TTS-LoRA",
     'output_dir': "output",
-    
+
+    'num_train_epochs': 4,
     'per_device_eval_batch_size': 1,
     'per_device_train_batch_size': 16,
     'gradient_accumulation_steps': 16,
     
     'weight_decay': 0.001,
-    'learning_rate': 5e-4,
-    'lr_scheduler_type': "linear",
-    'warmup_ratio': 0.05,
+    'learning_rate': 1e-4,
+    'lr_scheduler_type': "cosine",
+    'warmup_ratio': 0.01,
     'logging_steps': 50,
     'bf16': False,
 }
@@ -172,7 +172,8 @@ def main(encoded_data_path:str):
         phonemize_with_dict(ele['transcript'])
 
     # for debug only
-    # DATA_ENCODED = DATA_ENCODED[:900]
+    DATA_ENCODED = DATA_ENCODED[:10000]
+    random.shuffle(DATA_ENCODED)
 
     # Lấy tên model từ config đã khai báo ở cell trước
     model_name = training_config['model']
