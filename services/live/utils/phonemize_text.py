@@ -187,7 +187,8 @@ def phonemize_with_dict(text: str, phoneme_dict=phoneme_dict) -> str:
                 preserve_punctuation=True,
                 with_stress=True,
                 language_switch='remove-flags',
-                words_mismatch='ignore'
+                words_mismatch='ignore',
+                strip=True
             )
             
             if isinstance(vi_phonemes, str):
