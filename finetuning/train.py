@@ -57,7 +57,8 @@ def preprocess_sample(sample, tokenizer, max_len=2048):
     return {
         "input_ids": input_ids,
         "labels": labels,
-        "attention_mask": attention_mask
+        "attention_mask": attention_mask,
+        # "speaker_id": int(sample['sex'])
     }
 
 class VieNeuDataset(Dataset):
@@ -83,7 +84,11 @@ class VieNeuDataset(Dataset):
             print(f"Phonemization error: {e}")
             phones = text
         
-        data_item = {"phones": phones, "codes": sample["codes"]}
+        data_item = {
+            "phones": phones, 
+            "codes": sample["codes"], 
+            # "sex": sample['sex']
+        }
         return preprocess_sample(data_item, self.tokenizer, self.max_len)
 
 
@@ -108,13 +113,15 @@ def get_training_args(config):
         length_column_name="input_ids",
         group_by_length=True,
         optim="adamw_torch",
+        weight_decay = config['weight_decay'],
         ddp_find_unused_parameters=False,
         logging_steps=config['logging_steps'],
         eval_strategy="epoch",
-        save_strategy="epoch",
+        save_strategy="no",
         save_total_limit=2,
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
+        greater_is_better = False,
         report_to="none",
         dataloader_num_workers=2,
         dataloader_prefetch_factor= 2,
@@ -130,7 +137,7 @@ lora_config = LoraConfig(
         "q_proj", "k_proj", "v_proj", "o_proj", 
         "gate_proj", "up_proj", "down_proj"
     ],
-    lora_dropout=0.05,
+    lora_dropout=0.1,
     bias="none",
     task_type=TaskType.CAUSAL_LM,
 )
@@ -145,8 +152,9 @@ training_config = {
     'per_device_train_batch_size': 16,
     'gradient_accumulation_steps': 16,
     
-    'learning_rate': 2e-4,
-    'lr_scheduler_type': "cosine",
+    'weight_decay': 0.001,
+    'learning_rate': 5e-4,
+    'lr_scheduler_type': "linear",
     'warmup_ratio': 0.05,
     'logging_steps': 50,
     'bf16': False,
@@ -192,9 +200,15 @@ def main(encoded_data_path:str):
     full_dataset = VieNeuDataset(DATA_ENCODED, tokenizer)
 
     # 5. Train/Eval split 
-    val_size = max(1, int(0.05 * len(full_dataset)))
+    val_size = max(1, int(0.1 * len(full_dataset)))
     train_size = len(full_dataset) - val_size
-    train_dataset, eval_dataset = torch.utils.data.random_split(full_dataset, [train_size, val_size])
+
+    generator = torch.Generator().manual_seed(42)
+    train_dataset, eval_dataset = torch.utils.data.random_split(
+        full_dataset, 
+        lengths = [train_size, val_size],
+        generator=generator
+    )
 
     print(f"Train: {len(train_dataset)} | Eval: {len(eval_dataset)}")
 
