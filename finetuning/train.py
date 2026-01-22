@@ -84,6 +84,7 @@ def get_training_args(config):
         do_train=True,
         do_eval=True,
         # max_steps=config['max_steps'],
+        per_device_eval_batch_size = config['per_device_eval_batch_size'], 
         per_device_train_batch_size=config['per_device_train_batch_size'],
         gradient_accumulation_steps=config['gradient_accumulation_steps'],
         learning_rate=config['learning_rate'],
@@ -136,6 +137,7 @@ training_config = {
     'output_dir': "output",
     
     # --- CẤU HÌNH CHO TUAL T4 ---
+    'per_device_eval_batch_size': 1,
     'per_device_train_batch_size': 1,   # Giữ là 1 để an toàn vì VRAM T4 (15GB) < P100 (16GB)
     'gradient_accumulation_steps': 4,   # Tăng lên 8 (để bù lại batch size nhỏ)
     # ----------------------------
