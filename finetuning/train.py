@@ -110,8 +110,7 @@ def get_training_args(config):
         report_to="none",
         dataloader_num_workers=2,
         dataloader_prefetch_factor= 2,
-        use_liger_kernel = True,
-        use_cache = True,
+        use_liger_kernel = True
     )
 
 
