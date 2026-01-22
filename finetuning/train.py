@@ -92,8 +92,9 @@ def get_training_args(config):
         
         # --- CẤU HÌNH QUAN TRỌNG CHO T4 ---
         fp16=True,                           # T4 chạy fp16 rất tốt
-        gradient_checkpointing=True,         # Bắt buộc bật để tiết kiệm RAM
-        gradient_checkpointing_kwargs={'use_reentrant': False},
+        # gradient_checkpointing=True,         # Bắt buộc bật để tiết kiệm RAM
+        # gradient_checkpointing_kwargs={'use_reentrant': False},
+        use_cache = True,
         
         # Tối ưu bộ nhớ & Tốc độ
         group_by_length=True,                # CỰC KỲ QUAN TRỌNG: Gom các câu cùng độ dài train chung để đỡ tốn RAM padding
@@ -132,7 +133,7 @@ training_config = {
     'output_dir': "output",
     
     # --- CẤU HÌNH CHO TUAL T4 ---
-    'per_device_train_batch_size': 2,   # Giữ là 1 để an toàn vì VRAM T4 (15GB) < P100 (16GB)
+    'per_device_train_batch_size': 8,   # Giữ là 1 để an toàn vì VRAM T4 (15GB) < P100 (16GB)
     'gradient_accumulation_steps': 8,   # Tăng lên 8 (để bù lại batch size nhỏ)
     # ----------------------------
     
