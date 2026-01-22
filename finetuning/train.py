@@ -3,6 +3,7 @@ warnings.filterwarnings('ignore')
 
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, default_data_collator
 from transformers.trainer_utils import is_main_process
@@ -96,7 +97,8 @@ def get_training_args(config):
         gradient_checkpointing_kwargs={'use_reentrant': False},
         
         # Tối ưu bộ nhớ & Tốc độ
-        group_by_length=False,                # CỰC KỲ QUAN TRỌNG: Gom các câu cùng độ dài train chung để đỡ tốn RAM padding
+        length_column_name="input_ids",
+        group_by_length=True,                # CỰC KỲ QUAN TRỌNG: Gom các câu cùng độ dài train chung để đỡ tốn RAM padding
         optim="adamw_torch",                 # Optimizer ổn định
         ddp_find_unused_parameters=False,    # Tắt cái này để tránh lỗi khi chạy nhiều GPU
         # ----------------------------------
@@ -108,9 +110,9 @@ def get_training_args(config):
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
         report_to="none",
-        # dataloader_num_workers=2,
-        # dataloader_prefetch_factor= 1,
-        # dataloader_pin_memory=True,
+        dataloader_num_workers=2,
+        dataloader_prefetch_factor= 1,
+        dataloader_pin_memory=True,
         use_liger_kernel = True
     )
 
@@ -134,8 +136,8 @@ training_config = {
     'output_dir': "output",
     
     # --- CẤU HÌNH CHO TUAL T4 ---
-    'per_device_train_batch_size': 4,   # Giữ là 1 để an toàn vì VRAM T4 (15GB) < P100 (16GB)
-    'gradient_accumulation_steps': 4,   # Tăng lên 8 (để bù lại batch size nhỏ)
+    'per_device_train_batch_size': 2,   # Giữ là 1 để an toàn vì VRAM T4 (15GB) < P100 (16GB)
+    'gradient_accumulation_steps': 8,   # Tăng lên 8 (để bù lại batch size nhỏ)
     # ----------------------------
     
     'learning_rate': 2e-4,
@@ -175,7 +177,7 @@ def main(encoded_data_path:str):
         # T4 tối ưu cho float16, không dùng bfloat16
         dtype=torch.float16,
         # Tự động chia model sang 2 GPU để tận dụng 30GB VRAM gộp
-        device_map="auto",
+        # device_map="auto",
         attn_implementation="sdpa"        
     )
 
