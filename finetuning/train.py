@@ -109,7 +109,8 @@ def get_training_args(config):
         metric_for_best_model="eval_loss",
         report_to="none",
         dataloader_num_workers=2,
-        dataloader_prefetch_factor= 2,
+        dataloader_prefetch_factor= 1,
+        dataloader_pin_memory=True,
         use_liger_kernel = True
     )
 
@@ -134,7 +135,7 @@ training_config = {
     
     # --- CẤU HÌNH CHO TUAL T4 ---
     'per_device_train_batch_size': 2,   # Giữ là 1 để an toàn vì VRAM T4 (15GB) < P100 (16GB)
-    'gradient_accumulation_steps': 8,   # Tăng lên 8 (để bù lại batch size nhỏ)
+    'gradient_accumulation_steps': 4,   # Tăng lên 8 (để bù lại batch size nhỏ)
     # ----------------------------
     
     'learning_rate': 2e-4,
