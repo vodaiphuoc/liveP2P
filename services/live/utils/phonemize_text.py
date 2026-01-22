@@ -163,7 +163,8 @@ def phonemize_with_dict(text: str, phoneme_dict=phoneme_dict) -> str:
                 backend='espeak',
                 preserve_punctuation=True,
                 with_stress=True,
-                language_switch="remove-flags"
+                language_switch="remove-flags",
+                words_mismatch='ignore'
             )
             
             if isinstance(en_phonemes, str):
