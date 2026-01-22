@@ -2,6 +2,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, default_data_collator
+from transformers.trainer_utils import is_main_process
 from peft import LoraConfig, TaskType, get_peft_model
 from transformers import TrainingArguments
 import os
@@ -109,6 +110,7 @@ def get_training_args(config):
         report_to="none",
         dataloader_num_workers=2,
         dataloader_prefetch_factor= 2,
+        use_liger_kernel = True
     )
 
 
@@ -208,10 +210,11 @@ def main(encoded_data_path:str):
     trainer.train(resume_from_checkpoint=False)
 
     # 9. Lưu Model
-    save_path = os.path.join(training_config['output_dir'], training_config['run_name'])
-    print(f"Saving model to: {save_path}")
-    model.save_pretrained(save_path)
-    tokenizer.save_pretrained(save_path)
+    if is_main_process():
+        save_path = os.path.join(training_config['output_dir'], training_config['run_name'])
+        print(f"Saving model to: {save_path}")
+        model.save_pretrained(save_path)
+        tokenizer.save_pretrained(save_path)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
