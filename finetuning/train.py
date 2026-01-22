@@ -138,8 +138,8 @@ training_config = {
     
     # --- CẤU HÌNH CHO TUAL T4 ---
     'per_device_eval_batch_size': 1,
-    'per_device_train_batch_size': 4,   # Giữ là 1 để an toàn vì VRAM T4 (15GB) < P100 (16GB)
-    'gradient_accumulation_steps': 8,   # Tăng lên 8 (để bù lại batch size nhỏ)
+    'per_device_train_batch_size': 8,   # Giữ là 1 để an toàn vì VRAM T4 (15GB) < P100 (16GB)
+    'gradient_accumulation_steps': 16,   # Tăng lên 8 (để bù lại batch size nhỏ)
     # ----------------------------
     
     'learning_rate': 2e-4,
@@ -161,7 +161,7 @@ def main(encoded_data_path:str):
         phonemize_with_dict(ele['transcript'])
 
     # for debug only
-    DATA_ENCODED = DATA_ENCODED[:300]
+    DATA_ENCODED = DATA_ENCODED[:800]
 
     # Lấy tên model từ config đã khai báo ở cell trước
     model_name = training_config['model']
@@ -176,10 +176,7 @@ def main(encoded_data_path:str):
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         trust_remote_code=True,
-        # T4 tối ưu cho float16, không dùng bfloat16
         dtype=torch.float16,
-        # Tự động chia model sang 2 GPU để tận dụng 30GB VRAM gộp
-        # device_map="auto",
         attn_implementation="sdpa"        
     )
 
@@ -203,7 +200,6 @@ def main(encoded_data_path:str):
     model.print_trainable_parameters()
 
     # 7. Khởi tạo Trainer
-    # Lưu ý: Hàm get_training_args() phải là hàm MỚI (bản T4) mình đưa ở câu trả lời trước
     args = get_training_args(training_config)
 
     trainer = Trainer(
