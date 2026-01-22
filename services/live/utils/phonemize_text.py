@@ -178,13 +178,15 @@ def phonemize_with_dict(text: str, phoneme_dict=phoneme_dict) -> str:
     
     if vi_texts:
         try:
+            print('runing with vi_texts')
             vi_phonemes = phonemize(
                 vi_texts,
                 language='vi',
                 backend='espeak',
                 preserve_punctuation=True,
                 with_stress=True,
-                language_switch='remove-flags'
+                language_switch='remove-flags',
+                words_mismatch='ignore'
             )
             
             if isinstance(vi_phonemes, str):
