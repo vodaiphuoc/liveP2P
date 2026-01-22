@@ -131,7 +131,7 @@ training_config = {
     
     # --- CẤU HÌNH CHO TUAL T4 ---
     'per_device_train_batch_size': 8,   # Giữ là 1 để an toàn vì VRAM T4 (15GB) < P100 (16GB)
-    'gradient_accumulation_steps': 8,   # Tăng lên 8 (để bù lại batch size nhỏ)
+    'gradient_accumulation_steps': 4,   # Tăng lên 8 (để bù lại batch size nhỏ)
     # ----------------------------
     
     'learning_rate': 2e-4,
