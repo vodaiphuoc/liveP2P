@@ -117,7 +117,10 @@ def get_training_args(config):
 lora_config = LoraConfig(
     r=16,
     lora_alpha=32,
-    target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+    target_modules=[
+        "q_proj", "k_proj", "v_proj", "o_proj", 
+        # "gate_proj", "up_proj", "down_proj"
+    ],
     lora_dropout=0.05,
     bias="none",
     task_type=TaskType.CAUSAL_LM,
@@ -130,8 +133,8 @@ training_config = {
     'output_dir': "output",
     
     # --- CẤU HÌNH CHO TUAL T4 ---
-    'per_device_train_batch_size': 4,   # Giữ là 1 để an toàn vì VRAM T4 (15GB) < P100 (16GB)
-    'gradient_accumulation_steps': 4,   # Tăng lên 8 (để bù lại batch size nhỏ)
+    'per_device_train_batch_size': 2,   # Giữ là 1 để an toàn vì VRAM T4 (15GB) < P100 (16GB)
+    'gradient_accumulation_steps': 8,   # Tăng lên 8 (để bù lại batch size nhỏ)
     # ----------------------------
     
     'learning_rate': 2e-4,
