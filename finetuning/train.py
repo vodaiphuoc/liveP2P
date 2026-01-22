@@ -60,7 +60,6 @@ class VieNeuDataset(Dataset):
     def __getitem__(self, idx):
         sample = self.samples[idx]
         text = sample["transcript"]
-        text += '.'
         
         try:
             phones = phonemize_with_dict(text)
