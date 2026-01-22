@@ -176,8 +176,9 @@ def main(encoded_data_path:str):
     )
 
     # 3. Bật tiết kiệm VRAM (BẮT BUỘC để không bị OOM)
-    # model.gradient_checkpointing_enable()
+    model.gradient_checkpointing_enable()
     model.enable_input_require_grads()
+    model.config.use_cache = False
 
     # 4. Load Dataset
     full_dataset = VieNeuDataset(DATA_ENCODED, tokenizer)
