@@ -6,7 +6,6 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, default_data_collator
-from transformers.trainer_utils import is_main_process
 from peft import LoraConfig, TaskType, get_peft_model
 from transformers import TrainingArguments
 import torch
@@ -161,7 +160,7 @@ def main(encoded_data_path:str):
         phonemize_with_dict(ele['transcript'])
 
     # for debug only
-    DATA_ENCODED = DATA_ENCODED[:800]
+    DATA_ENCODED = DATA_ENCODED[:200]
 
     # Lấy tên model từ config đã khai báo ở cell trước
     model_name = training_config['model']
@@ -215,7 +214,7 @@ def main(encoded_data_path:str):
     trainer.train(resume_from_checkpoint=False)
 
     # 9. Lưu Model
-    if is_main_process():
+    if trainer.is_world_process_zero():
         save_path = os.path.join(training_config['output_dir'], training_config['run_name'])
         print(f"Saving model to: {save_path}")
         model.save_pretrained(save_path)
