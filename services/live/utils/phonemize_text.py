@@ -157,6 +157,7 @@ def phonemize_with_dict(text: str, phoneme_dict=phoneme_dict) -> str:
     
     if en_texts:
         try:
+            print('runing with en_texts')
             en_phonemes = phonemize(
                 en_texts,
                 language='en-us',

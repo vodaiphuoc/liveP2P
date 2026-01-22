@@ -146,6 +146,11 @@ def main(encoded_data_path:str):
     with open(encoded_data_path,"r", encoding='utf-8') as fp:
         DATA_ENCODED = json.load(fp)
 
+
+    for ele in DATA_ENCODED:
+        phonemize_with_dict(ele['transcript'])
+        
+
     # Lấy tên model từ config đã khai báo ở cell trước
     model_name = training_config['model']
     print(f"Loading model: {model_name}")
