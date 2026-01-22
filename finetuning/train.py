@@ -146,10 +146,10 @@ def main(encoded_data_path:str):
     with open(encoded_data_path,"r", encoding='utf-8') as fp:
         DATA_ENCODED = json.load(fp)
 
-
+    # trick
     for ele in DATA_ENCODED:
         phonemize_with_dict(ele['transcript'])
-        
+
 
     # Lấy tên model từ config đã khai báo ở cell trước
     model_name = training_config['model']
@@ -201,6 +201,7 @@ def main(encoded_data_path:str):
     )
 
     # 8. Bắt đầu Train
+    print('start training')
     trainer.train(resume_from_checkpoint=False)
 
     # 9. Lưu Model
