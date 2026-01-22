@@ -15,4 +15,4 @@ cmake -B build
 cmake --build build --config Release -j 8
 
 python convert_hf_to_gguf.py "$2" --outfile model-fp16.gguf --outtype f16 && \
-./llama.cpp/quantize model-fp16.gguf model-q4.gguf Q4_K_M
+build/bin/llama-quantize model-fp16.gguf model-q4.gguf Q4_K_M
