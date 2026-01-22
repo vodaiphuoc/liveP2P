@@ -175,7 +175,7 @@ def main(encoded_data_path:str):
         dtype=torch.float16,
         # Tự động chia model sang 2 GPU để tận dụng 30GB VRAM gộp
         device_map="auto",
-        attn_implementation="liger"        
+        attn_implementation="sdpa"        
     )
 
     # 3. Bật tiết kiệm VRAM (BẮT BUỘC để không bị OOM)
