@@ -96,16 +96,14 @@ def get_training_args(config):
         # gradient_checkpointing_kwargs={'use_reentrant': False},
         
         # Tối ưu bộ nhớ & Tốc độ
-        group_by_length=True,                # CỰC KỲ QUAN TRỌNG: Gom các câu cùng độ dài train chung để đỡ tốn RAM padding
+        group_by_length=False,                # CỰC KỲ QUAN TRỌNG: Gom các câu cùng độ dài train chung để đỡ tốn RAM padding
         optim="adamw_torch",                 # Optimizer ổn định
         ddp_find_unused_parameters=False,    # Tắt cái này để tránh lỗi khi chạy nhiều GPU
         # ----------------------------------
         
         logging_steps=config['logging_steps'],
-        save_steps=config['save_steps'],
-        eval_strategy="steps",
-        eval_steps=config['eval_steps'],
-        save_strategy="steps",
+        eval_strategy="epoch",
+        save_strategy="epoch",
         save_total_limit=2,
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
@@ -142,8 +140,6 @@ training_config = {
     'warmup_ratio': 0.05,
     'max_steps': 5000,
     'logging_steps': 50,
-    'save_steps': 500,
-    'eval_steps': 500,
     'bf16': False,
 }
 
