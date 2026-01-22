@@ -94,7 +94,6 @@ def get_training_args(config):
         fp16=True,                           # T4 chạy fp16 rất tốt
         gradient_checkpointing=True,         # Bắt buộc bật để tiết kiệm RAM
         gradient_checkpointing_kwargs={'use_reentrant': False},
-        use_cache = False,
         
         # Tối ưu bộ nhớ & Tốc độ
         group_by_length=False,                # CỰC KỲ QUAN TRỌNG: Gom các câu cùng độ dài train chung để đỡ tốn RAM padding
