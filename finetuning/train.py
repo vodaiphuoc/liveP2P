@@ -137,7 +137,7 @@ training_config = {
     
     # --- CẤU HÌNH CHO TUAL T4 ---
     'per_device_eval_batch_size': 1,
-    'per_device_train_batch_size': 8,   # Giữ là 1 để an toàn vì VRAM T4 (15GB) < P100 (16GB)
+    'per_device_train_batch_size': 16,   # Giữ là 1 để an toàn vì VRAM T4 (15GB) < P100 (16GB)
     'gradient_accumulation_steps': 16,   # Tăng lên 8 (để bù lại batch size nhỏ)
     # ----------------------------
     
@@ -160,7 +160,7 @@ def main(encoded_data_path:str):
         phonemize_with_dict(ele['transcript'])
 
     # for debug only
-    DATA_ENCODED = DATA_ENCODED[:200]
+    DATA_ENCODED = DATA_ENCODED[:900]
 
     # Lấy tên model từ config đã khai báo ở cell trước
     model_name = training_config['model']
@@ -188,7 +188,7 @@ def main(encoded_data_path:str):
     full_dataset = VieNeuDataset(DATA_ENCODED, tokenizer)
 
     # 5. Train/Eval split (5%)
-    val_size = max(1, int(0.05 * len(full_dataset)))
+    val_size = max(1, int(0.03 * len(full_dataset)))
     train_size = len(full_dataset) - val_size
     train_dataset, eval_dataset = torch.utils.data.random_split(full_dataset, [train_size, val_size])
 
