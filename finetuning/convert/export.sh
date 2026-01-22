@@ -10,6 +10,8 @@ cd llama.cpp && pip install -r requirements.txt --quiet
 
 echo "Building llama.cpp"
 # make -j$(nproc)
+
+cmake -B build
 cmake --build build --config Release -j 8
 
 python convert_hf_to_gguf.py "$2" --outfile model-fp16.gguf --outtype f16 && \
