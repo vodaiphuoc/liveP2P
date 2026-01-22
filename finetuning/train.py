@@ -1,11 +1,13 @@
 import warnings
 warnings.filterwarnings('ignore')
 
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, default_data_collator
 from transformers.trainer_utils import is_main_process
 from peft import LoraConfig, TaskType, get_peft_model
 from transformers import TrainingArguments
-import os
 import torch
 from torch.utils.data import Dataset
 import argparse
@@ -172,7 +174,8 @@ def main(encoded_data_path:str):
         # T4 tối ưu cho float16, không dùng bfloat16
         dtype=torch.float16,
         # Tự động chia model sang 2 GPU để tận dụng 30GB VRAM gộp
-        device_map="auto"        
+        device_map="auto",
+        attn_implementation="liger"        
     )
 
     # 3. Bật tiết kiệm VRAM (BẮT BUỘC để không bị OOM)
