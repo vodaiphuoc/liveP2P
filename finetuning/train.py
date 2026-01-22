@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings('ignore')
+
 from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, default_data_collator
 from peft import LoraConfig, TaskType, get_peft_model
 from transformers import TrainingArguments
