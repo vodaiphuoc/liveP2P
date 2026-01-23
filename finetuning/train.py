@@ -131,7 +131,7 @@ def get_training_args(config):
 
 
 lora_config = LoraConfig(
-    r=16,
+    r=8,
     lora_alpha=32,
     target_modules=[
         "q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"
@@ -172,8 +172,8 @@ def main(encoded_data_path:str):
         phonemize_with_dict(ele['transcript'])
 
     # for debug only
-    DATA_ENCODED = DATA_ENCODED[:10000]
-    random.shuffle(DATA_ENCODED)
+    # DATA_ENCODED = DATA_ENCODED[:10000]
+    # random.shuffle(DATA_ENCODED)
 
     # Lấy tên model từ config đã khai báo ở cell trước
     model_name = training_config['model']
