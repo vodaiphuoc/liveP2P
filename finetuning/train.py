@@ -23,11 +23,15 @@ from torch.utils.data import Dataset
 import argparse
 import json
 import random
+import logging
 
 from utils.phonemize_text import phonemize_with_dict
 
+logger = logging.getLogger(__file__)
+
 def preprocess_sample(sample, tokenizer, max_len=2048):
     speech_gen_start = tokenizer.convert_tokens_to_ids('<|SPEECH_GENERATION_START|>')
+    speech_gen_end = tokenizer.convert_tokens_to_ids("<|SPEECH_GENERATION_END|>")
     ignore_index = -100
     
     phones = sample["phones"]
@@ -42,7 +46,9 @@ def preprocess_sample(sample, tokenizer, max_len=2048):
     if len(ids) < max_len:
         ids = ids + [tokenizer.pad_token_id] * (max_len - len(ids))
     elif len(ids) > max_len:
-        ids = ids[:max_len]
+        logger.info(f"seq length {len(ids)} > than {max_len}")
+        ids = ids[:max_len-1]
+        ids.append(speech_gen_end)
     
     input_ids = torch.tensor(ids, dtype=torch.long)
     labels = torch.full_like(input_ids, ignore_index)
@@ -131,12 +137,13 @@ def get_training_args(config):
 
 
 lora_config = LoraConfig(
-    r=8,
+    r=16,
     lora_alpha=32,
     target_modules=[
-        "q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"
+        "q_proj", "k_proj", "v_proj", "o_proj",
+        "gate_proj", "up_proj", "down_proj"
     ],
-    lora_dropout=0.05,
+    lora_dropout=0.1,
     bias="none",
     task_type=TaskType.CAUSAL_LM,
 )
@@ -149,12 +156,12 @@ training_config = {
 
     'num_train_epochs': 4,
     'per_device_eval_batch_size': 1,
-    'per_device_train_batch_size': 16,
-    'gradient_accumulation_steps': 24,
+    'per_device_train_batch_size': 32,
+    'gradient_accumulation_steps': 16,
     
-    'weight_decay': 0.01,
-    'learning_rate': 4e-5,
-    'lr_scheduler_type': "cosine",
+    'weight_decay': 0.02,
+    'learning_rate': 5e-5,
+    'lr_scheduler_type': "linear",
     'warmup_ratio': 0.01,
     'logging_steps': 50,
     'bf16': False,
@@ -173,7 +180,7 @@ def main(encoded_data_path:str):
 
     # for debug only
     # DATA_ENCODED = DATA_ENCODED[:10000]
-    # random.shuffle(DATA_ENCODED)
+    random.shuffle(DATA_ENCODED)
 
     # Lấy tên model từ config đã khai báo ở cell trước
     model_name = training_config['model']
@@ -206,7 +213,7 @@ def main(encoded_data_path:str):
 
     generator = torch.Generator().manual_seed(42)
     train_dataset, eval_dataset = torch.utils.data.random_split(
-        full_dataset, 
+        full_dataset,
         lengths = [train_size, val_size],
         generator=generator
     )
