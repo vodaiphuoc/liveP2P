@@ -150,10 +150,10 @@ training_config = {
     'num_train_epochs': 4,
     'per_device_eval_batch_size': 1,
     'per_device_train_batch_size': 16,
-    'gradient_accumulation_steps': 16,
+    'gradient_accumulation_steps': 24,
     
-    'weight_decay': 0.001,
-    'learning_rate': 1e-4,
+    'weight_decay': 0.01,
+    'learning_rate': 4e-5,
     'lr_scheduler_type': "cosine",
     'warmup_ratio': 0.01,
     'logging_steps': 50,
